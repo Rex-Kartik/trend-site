@@ -1,3 +1,4 @@
+# --- Required Imports ---
 import google.generativeai as genai
 import os
 import time
@@ -8,6 +9,8 @@ import re
 
 # --- Part 1: Configuration & Setup ---
 try:
+    # Securely get the API key from environment variables.
+    # This is the safest way to handle credentials.
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
         raise ValueError("GEMINI_API_KEY environment variable not set.")
@@ -16,11 +19,16 @@ except ValueError as e:
     print(e)
     exit()
 
+# Use the latest stable and fast model from Google.
 model = genai.GenerativeModel('gemini-2.5-flash')
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-HUGO_CONTENT_PATH = os.path.join(SCRIPT_DIR, "content", "posts")
 
+# DYNAMIC PATHS: These will work on ANY computer (your local Windows PC or the Linux GitHub robot).
+# This gets the directory where the script itself is located.
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+# This intelligently joins the paths, using the correct slashes ('\' or '/') for the OS.
+HUGO_CONTENT_PATH = os.path.join(SCRIPT_DIR, "content", "posts")
 PROCESSED_LOG_FILE = os.path.join(SCRIPT_DIR, "processed_topics.txt")
+
 
 # --- Part 2: The Trend Spotter (Final Version: Google News RSS) ---
 def get_trending_topics(country_code='IN'):
@@ -29,17 +37,17 @@ def get_trending_topics(country_code='IN'):
     This is the most stable and dependency-free method.
     """
     print("📈 Fetching top headlines from the stable Google News RSS feed...")
-    # THIS IS THE CORRECT, WORKING URL for top stories in India (English).
+    # This is the correct, working URL for top stories in India (English).
     RSS_URL = "https://news.google.com/rss?hl=en-IN&gl=IN&ceid=IN:en"
-
+    
     try:
         # Use 'requests' to get the content from the URL.
         response = requests.get(RSS_URL)
         response.raise_for_status() # This will raise an error if the request failed (like a 404).
-
+        
         # Parse the response, which is in a standard XML format.
         root = ET.fromstring(response.content)
-
+        
         topics = []
         # An RSS feed contains a 'channel' which contains multiple 'item's.
         # We loop through each 'item' to find its 'title'.
@@ -50,7 +58,7 @@ def get_trending_topics(country_code='IN'):
                 # This line of code cleans that up for a better topic.
                 cleaned_title = title.rsplit(' - ', 1)[0]
                 topics.append(cleaned_title)
-
+        
         if not topics:
             print("  ⚠️ No topics found in the RSS feed.")
             return []
@@ -66,12 +74,13 @@ def get_trending_topics(country_code='IN'):
         print(f"  ❌ Error parsing XML from RSS feed: {e}")
         return []
 
+
 # --- Part 3: The AI Writer ---
 def generate_article(topic):
     """Generates a news-style explanatory article for a given trending topic."""
     print(f"🤖 Generating article for: '{topic}'...")
     
-    # This prompt is engineered to be more journalistic
+    # This prompt is engineered to be journalistic and objective.
     prompt = f"""
     Act as a neutral and objective news explainer. Your audience is the general public
     who has just heard about "{topic}" and wants to understand what it is.
@@ -79,17 +88,17 @@ def generate_article(topic):
     Write a concise, easy-to-understand article (around 400-500 words) explaining the topic: "{topic}".
 
     Your article must include:
-    1.  A direct and clear introduction explaining what "{topic}" is and why it's trending.
+    1.  A direct and clear introduction explaining what "{topic}" is and why it's a top headline.
     2.  2-3 key bullet points providing the most important facts or context.
-    3.  A brief paragraph on the background or history of the topic.
-    4.  A concluding sentence summarizing its significance.
+    3.  A brief paragraph on the background or significance of the topic.
+    4.  A concluding sentence summarizing its importance.
 
     Do not use sensational language. The tone should be informative and factual.
     The final output should be a single block of text in Markdown format.
     """
     try:
         response = model.generate_content(prompt)
-        # Add basic content moderation
+        # Basic safety check to see if the content was blocked.
         if response.prompt_feedback.block_reason:
             print(f"  ⚠️ Content blocked for topic '{topic}'. Reason: {response.prompt_feedback.block_reason}")
             return None
@@ -97,6 +106,7 @@ def generate_article(topic):
     except Exception as e:
         print(f"  ❌ Error generating article: {e}")
         return None
+
 
 # --- Part 4: The Publisher's Assistant (ULTRA-ROBUST FINAL VERSION) ---
 def save_for_hugo(topic, article_content):
@@ -107,19 +117,14 @@ def save_for_hugo(topic, article_content):
     print(f"💾 Saving file for '{topic}'...")
 
     # --- Start of the Sanitization Block ---
-
-    # Line 1: Convert to lowercase
+    # 1. Convert to lowercase
     sanitized_topic = topic.lower()
-
-    # Line 2: Replace spaces and all special characters with a hyphen
+    # 2. Replace spaces and all non-alphanumeric characters with a hyphen
     sanitized_topic = re.sub(r'[\s\W_]+', '-', sanitized_topic)
-
-    # Line 3: Remove any leading or trailing hyphens
+    # 3. Remove any leading or trailing hyphens that might result
     sanitized_topic = sanitized_topic.strip('-')
-    
-    # Line 4: Truncate to a reasonable length and add the file extension
+    # 4. Truncate to a reasonable length to prevent "filename too long" errors
     filename = sanitized_topic[:100] + ".md"
-
     # --- End of the Sanitization Block ---
 
     filepath = os.path.join(HUGO_CONTENT_PATH, filename)
@@ -127,8 +132,8 @@ def save_for_hugo(topic, article_content):
     current_date = datetime.datetime.now(datetime.timezone.utc).isoformat()
     
     # --- Start of the Front Matter Block ---
-    
-    # Line 5: The Hugo front matter (metadata for the post)
+    # Use the original, human-readable topic for the title.
+    # Replace any double quotes in the title to prevent breaking the TOML format.
     front_matter = f"""---
 title: "Understanding the Trend: {topic.replace('"', "'")}"
 date: {current_date}
@@ -141,13 +146,21 @@ tags: ["Trending", "News", "{topic.split(' ')[0]}"]
     
     full_content = front_matter + "\n" + article_content
     
-    # ... (rest of the function) ...
+    try:
+        with open(filepath, "w", encoding="utf-8") as f:
+            f.write(full_content)
+        print(f"  ✅ Successfully saved: {filepath}")
+        return True
+    except Exception as e:
+        print(f"  ❌ Error saving file: {e}")
+        return False
+
 
 # --- Part 5: The Main Execution Loop ---
 if __name__ == "__main__":
     print("\n🚀 Starting the Automated Trend Blogger...")
 
-    # Load already processed topics to avoid duplicates
+    # Load already processed topics to avoid writing duplicate articles.
     try:
         with open(PROCESSED_LOG_FILE, 'r') as f:
             processed_topics = set(f.read().splitlines())
@@ -167,12 +180,13 @@ if __name__ == "__main__":
             article = generate_article(topic)
             if article:
                 if save_for_hugo(topic, article):
-                    # Log the topic as processed only if it was saved successfully
+                    # Log the topic as processed only if it was saved successfully.
                     with open(PROCESSED_LOG_FILE, 'a') as f:
                         f.write(topic + '\n')
             
+            # Pause between topics to be respectful to the API.
             print("--- Pausing for 15 seconds ---")
-            time.sleep(15) # A longer delay for this more intensive process
+            time.sleep(15)
     
     if new_topics_found == 0:
         print("✅ No new trends to report. Everything is up to date.")
