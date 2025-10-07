@@ -2,7 +2,8 @@ import google.generativeai as genai
 import os
 import time
 import datetime
-from pygooglenews import GoogleNews
+import requests
+import xml.etree.ElementTree as ET
 
 # --- Part 1: Configuration & Setup ---
 try:
@@ -20,33 +21,48 @@ HUGO_CONTENT_PATH = os.path.join(SCRIPT_DIR, "content", "posts")
 
 PROCESSED_LOG_FILE = os.path.join(SCRIPT_DIR, "processed_topics.txt")
 
-# --- Part 2: The Trend Spotter (Upgraded to PyGoogleNews) ---
-def get_trending_topics(country='IN'):
+# --- Part 2: The Trend Spotter (Final Version: Google News RSS) ---
+def get_trending_topics(country_code='IN'):
     """
-    Fetches trending topics from Google News. This is a stable method.
+    Fetches top news headlines from the official Google News RSS feed.
+    This is the most stable and dependency-free method.
     """
-    print("📈 Fetching trending topics from Google News...")
+    print("📈 Fetching top headlines from the stable Google News RSS feed...")
+    # THIS IS THE CORRECT, WORKING URL for top stories in India (English).
+    RSS_URL = "https://news.google.com/rss?hl=en-IN&gl=IN&ceid=IN:en"
+
     try:
-        gn = GoogleNews(country = country)
-        # We will look for top stories in the 'World' category, as it often
-        # reflects the broadest and most significant trends.
-        top = gn.top_news()
+        # Use 'requests' to get the content from the URL.
+        response = requests.get(RSS_URL)
+        response.raise_for_status() # This will raise an error if the request failed (like a 404).
 
-        # The library returns a dictionary with an 'entries' list.
-        entries = top.get('entries', [])
+        # Parse the response, which is in a standard XML format.
+        root = ET.fromstring(response.content)
 
-        # We will extract the 'title' from each entry.
-        topics = [entry['title'] for entry in entries]
+        topics = []
+        # An RSS feed contains a 'channel' which contains multiple 'item's.
+        # We loop through each 'item' to find its 'title'.
+        for item in root.findall('./channel/item'):
+            title = item.find('title').text
+            if title:
+                # News headlines often have the source at the end, like "- BBC News".
+                # This line of code cleans that up for a better topic.
+                cleaned_title = title.rsplit(' - ', 1)[0]
+                topics.append(cleaned_title)
 
         if not topics:
-            print("  ⚠️ No topics found in Google News feed.")
+            print("  ⚠️ No topics found in the RSS feed.")
             return []
 
         print(f"  ✅ Found {len(topics)} topics.")
-        return topics
+        # We will only process the top 10 to keep the content fresh and focused.
+        return topics[:10]
 
-    except Exception as e:
-        print(f"  ❌ Error fetching trends with PyGoogleNews: {e}")
+    except requests.exceptions.RequestException as e:
+        print(f"  ❌ Error fetching RSS feed: {e}")
+        return []
+    except ET.ParseError as e:
+        print(f"  ❌ Error parsing XML from RSS feed: {e}")
         return []
 
 # --- Part 3: The AI Writer ---
