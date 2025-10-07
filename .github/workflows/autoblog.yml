@@ -1,48 +1,62 @@
+# This is the name of your workflow, which will appear in the Actions tab on GitHub.
 name: Daily Trend Blogging
 
+# This section defines when the workflow will run.
 on:
-  # This runs the job on a schedule (cron job)
-  # This schedule is for 06:30 UTC, which is 12:00 PM IST
+  # 'schedule' runs the job at a specific time using a cron expression.
+  # This one is set for 06:30 UTC, which is 12:00 PM (noon) in India Standard Time (IST).
   schedule:
     - cron: '30 6 * * *'
-  # This also allows you to run it manually from the Actions tab
+  # 'workflow_dispatch' allows you to manually run the workflow from the GitHub Actions tab.
   workflow_dispatch:
 
+# CRITICAL FIX: This block grants the workflow permission to perform actions.
+# By default, workflows can only read your code. We are giving it permission to write.
+permissions:
+  contents: write
+
+# This section defines the actual jobs that will be run. We only have one.
 jobs:
   build-and-post:
+    # This specifies the type of virtual machine the job will run on. 'ubuntu-latest' is a standard Linux environment.
     runs-on: ubuntu-latest
 
+    # This section contains the sequence of steps the robot will perform.
     steps:
-    # Step 1: Check out your website's code
+    # Step 1: Checks out your repository's code so the job can access it.
     - name: Check out repository
       uses: actions/checkout@v3
 
-    # Step 2: Set up Python
+    # Step 2: Sets up the Python programming language environment.
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.10'
 
-    # Step 3: Install Python dependencies
+    # Step 3: Installs the Python libraries your script needs to run.
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install google-generativeai pytrends
 
-    # Step 4: Run your autoblogger script
+    # Step 4: A safety step to ensure the content directory exists before the script runs.
+    - name: Ensure content directory exists
+      run: mkdir -p content/posts
+
+    # Step 5: This is the main step that runs your Python script.
     - name: Run the Autoblogger Script
+      # 'env' makes your GitHub Secret available as an environment variable to the script.
       env:
         GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-      run: |
-        # IMPORTANT: This command assumes your script and log file are in the root
-        # of your Hugo project. You would copy them there.
-        python trend_blogger.py
-
-    # Step 5: Commit and push the new articles back to the repository
+      run: python trend_blogger.py
+      
+    # Step 6: Commits any new files (the articles) created by the script back to your repository.
     - name: Commit new posts
       run: |
         git config --global user.name 'GitHub Actions Bot'
         git config --global user.email 'actions@github.com'
         git add .
-        git diff --quiet && git diff --staged --quiet || git commit -m "AUTOBOT: Add new trend articles"
+        # This improved command only creates a commit if there are actual new files.
+        git diff --quiet && git diff --staged --quiet || git commit -m "AUTOBOT: Add new trend articles for $(date +'%Y-%m-%d')"
         git push
+
