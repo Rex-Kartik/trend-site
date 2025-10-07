@@ -37,8 +37,8 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install google-generativeai pytrends
-
+        pip install google-generativeai requests pygooglenews # Add pygooglenews here
+        
     # Step 4: A safety step to ensure the content directory exists before the script runs.
     - name: Ensure content directory exists
       run: mkdir -p content/posts

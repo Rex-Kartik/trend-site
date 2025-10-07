@@ -2,8 +2,7 @@ import google.generativeai as genai
 import os
 import time
 import datetime
-import requests
-import xml.etree.ElementTree as ET
+from pygooglenews import GoogleNews
 
 # --- Part 1: Configuration & Setup ---
 try:
@@ -21,45 +20,33 @@ HUGO_CONTENT_PATH = os.path.join(SCRIPT_DIR, "content", "posts")
 
 PROCESSED_LOG_FILE = os.path.join(SCRIPT_DIR, "processed_topics.txt")
 
-# --- Part 2: The Trend Spotter (Upgraded to RSS) ---
-def get_trending_topics(country_code='IN'):
+# --- Part 2: The Trend Spotter (Upgraded to PyGoogleNews) ---
+def get_trending_topics(country='IN'):
     """
-    Fetches the top daily search trends from Google's official RSS feed.
-    This method is more reliable than unofficial libraries.
+    Fetches trending topics from Google News. This is a stable method.
     """
-    print("📈 Fetching trending topics from Google Trends RSS feed...")
-    # This is the public URL for the Indian daily trends RSS feed.
-    RSS_URL = f"https://trends.google.com/trends/trendingsearches/daily/rss?geo={country_code}"
-
+    print("📈 Fetching trending topics from Google News...")
     try:
-        # Use the 'requests' library to get the content from the URL.
-        response = requests.get(RSS_URL)
-        # Raise an error if the request was not successful (e.g., 404, 500).
-        response.raise_for_status()
+        gn = GoogleNews(country = country)
+        # We will look for top stories in the 'World' category, as it often
+        # reflects the broadest and most significant trends.
+        top = gn.top_news()
 
-        # Parse the response content, which is in XML format.
-        root = ET.fromstring(response.content)
+        # The library returns a dictionary with an 'entries' list.
+        entries = top.get('entries', [])
 
-        topics = []
-        # The structure of an RSS feed is a 'channel' with multiple 'item' tags.
-        # We loop through each 'item' to find its 'title'.
-        for item in root.findall('./channel/item'):
-            title = item.find('title').text
-            if title:
-                topics.append(title)
+        # We will extract the 'title' from each entry.
+        topics = [entry['title'] for entry in entries]
 
         if not topics:
-            print("  ⚠️ No topics found in the RSS feed.")
+            print("  ⚠️ No topics found in Google News feed.")
             return []
 
         print(f"  ✅ Found {len(topics)} topics.")
         return topics
 
-    except requests.exceptions.RequestException as e:
-        print(f"  ❌ Error fetching RSS feed: {e}")
-        return []
-    except ET.ParseError as e:
-        print(f"  ❌ Error parsing XML from RSS feed: {e}")
+    except Exception as e:
+        print(f"  ❌ Error fetching trends with PyGoogleNews: {e}")
         return []
 
 # --- Part 3: The AI Writer ---
