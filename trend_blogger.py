@@ -15,7 +15,7 @@ except ValueError as e:
     print(e)
     exit()
 
-model = genai.GenerativeModel('gemini-1.5-flash-latest')
+model = genai.GenerativeModel('gemini-2.5-flash')
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 HUGO_CONTENT_PATH = os.path.join(SCRIPT_DIR, "content", "posts")
 
