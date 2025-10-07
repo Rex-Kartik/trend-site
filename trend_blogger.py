@@ -2,7 +2,8 @@ import google.generativeai as genai
 import os
 import time
 import datetime
-from pytrends.request import TrendReq
+import requests
+import xml.etree.ElementTree as ET
 
 # --- Part 1: Configuration & Setup ---
 try:
@@ -20,18 +21,45 @@ HUGO_CONTENT_PATH = os.path.join(SCRIPT_DIR, "content", "posts")
 
 PROCESSED_LOG_FILE = os.path.join(SCRIPT_DIR, "processed_topics.txt")
 
-# --- Part 2: The Trend Spotter ---
-def get_trending_topics(country='IN'):
-    """Fetches the top daily search trends from Google Trends for a given country."""
-    print("📈 Fetching trending topics from Google...")
+# --- Part 2: The Trend Spotter (Upgraded to RSS) ---
+def get_trending_topics(country_code='IN'):
+    """
+    Fetches the top daily search trends from Google's official RSS feed.
+    This method is more reliable than unofficial libraries.
+    """
+    print("📈 Fetching trending topics from Google Trends RSS feed...")
+    # This is the public URL for the Indian daily trends RSS feed.
+    RSS_URL = f"https://trends.google.com/trends/trendingsearches/daily/rss?geo={country_code}"
+
     try:
-        pytrends = TrendReq(hl='en-US', tz=330) # tz=330 is for India Standard Time
-        trending_searches_df = pytrends.trending_searches(pn='india')
-        topics = trending_searches_df[0].tolist()
+        # Use the 'requests' library to get the content from the URL.
+        response = requests.get(RSS_URL)
+        # Raise an error if the request was not successful (e.g., 404, 500).
+        response.raise_for_status()
+
+        # Parse the response content, which is in XML format.
+        root = ET.fromstring(response.content)
+
+        topics = []
+        # The structure of an RSS feed is a 'channel' with multiple 'item' tags.
+        # We loop through each 'item' to find its 'title'.
+        for item in root.findall('./channel/item'):
+            title = item.find('title').text
+            if title:
+                topics.append(title)
+
+        if not topics:
+            print("  ⚠️ No topics found in the RSS feed.")
+            return []
+
         print(f"  ✅ Found {len(topics)} topics.")
         return topics
-    except Exception as e:
-        print(f"  ❌ Error fetching trends: {e}")
+
+    except requests.exceptions.RequestException as e:
+        print(f"  ❌ Error fetching RSS feed: {e}")
+        return []
+    except ET.ParseError as e:
+        print(f"  ❌ Error parsing XML from RSS feed: {e}")
         return []
 
 # --- Part 3: The AI Writer ---
