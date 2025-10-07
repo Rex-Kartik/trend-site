@@ -15,8 +15,10 @@ except ValueError as e:
     exit()
 
 model = genai.GenerativeModel('gemini-pro')
-HUGO_CONTENT_PATH = "C:\Users\Rex Kartik\Desktop\programing\Trend\trend-site\content\posts"
-PROCESSED_LOG_FILE = "processed_topics.txt"
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+HUGO_CONTENT_PATH = os.path.join(SCRIPT_DIR, "content", "posts")
+
+PROCESSED_LOG_FILE = os.path.join(SCRIPT_DIR, "processed_topics.txt")
 
 # --- Part 2: The Trend Spotter ---
 def get_trending_topics(country='IN'):
