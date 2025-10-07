@@ -1,34 +1,26 @@
-    # This is the main build configuration for Netlify
-    [build]
-      # This is the command Netlify will run to build your site.
-      command = "hugo"
-      # This is the folder Netlify will publish after the build is successful.
-      publish = "public"
-    
-    # This section tells Netlify which software versions to use.
-    [build.environment]
-      # This is the crucial part. We are telling Netlify to use a specific, recent version of Hugo.
-      HUGO_VERSION = "0.125.7"
-      # We can also specify the Go programming language version, which Hugo is built with.
-      GO_VERSION = "1.21.0"
-    ```
+# This is the main build configuration for Netlify
+[build]
+  # This is the command Netlify will run to build your site.
+  command = "hugo"
+  # This is the folder Netlify will publish after the build is successful.
+  publish = "public"
 
-### **What This Configuration File Does**
-
-* `[build]`: This section tells Netlify the basic commands. `command = "hugo"` confirms the build command, and `publish = "public"` tells it which folder contains the final website.
-* `[build.environment]`: This is the important part we were missing.
-    * `HUGO_VERSION = "0.125.7"`: This line instructs Netlify, "Before you do anything else, please download and install Hugo version 0.125.7." Now, when it gets to the `hugo` command, the tool will be available.
-
+# This section tells Netlify which software versions to use.
+[build.environment]
+  # This is the crucial part. We are telling Netlify to use a specific, recent version of Hugo.
+  HUGO_VERSION = "0.125.7"
+  # We can also specify the Go programming language version, which Hugo is built with.
+  GO_VERSION = "1.21.0"
+```
 
 ### **Part 3: Your Final Action Plan**
 
-1.  **Create the `netlify.toml` file** in the root of your `trend-site` project.
-2.  **Paste the configuration code** into the file and save it.
-3.  **Push this new file** to your GitHub repository.
+1.  **Replace the code:** Ensure the contents of your `netlify.toml` file exactly match the block above.
+2.  **Save** the file.
+3.  **Push this final fix** to GitHub.
 
     ```bash
     # In your terminal inside the trend-site folder
     git add netlify.toml
-    git commit -m "feat: Add netlify configuration to specify hugo version"
+    git commit -m "fix(netlify): Correct syntax in netlify.toml"
     git push
-    
