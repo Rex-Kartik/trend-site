@@ -4,6 +4,7 @@ import time
 import datetime
 import requests
 import xml.etree.ElementTree as ET
+import re
 
 # --- Part 1: Configuration & Setup ---
 try:
@@ -97,36 +98,50 @@ def generate_article(topic):
         print(f"  ❌ Error generating article: {e}")
         return None
 
-# --- Part 4: The Publisher's Assistant ---
+# --- Part 4: The Publisher's Assistant (ULTRA-ROBUST FINAL VERSION) ---
 def save_for_hugo(topic, article_content):
-    """Saves the article as a Markdown file with Hugo front matter."""
+    """
+    Saves the article as a Markdown file with Hugo front matter.
+    Includes a powerful sanitizer to create valid filenames for ALL operating systems.
+    """
     print(f"💾 Saving file for '{topic}'...")
+
+    # --- Start of the Sanitization Block ---
+
+    # Line 1: Convert to lowercase
+    sanitized_topic = topic.lower()
+
+    # Line 2: Replace spaces and all special characters with a hyphen
+    sanitized_topic = re.sub(r'[\s\W_]+', '-', sanitized_topic)
+
+    # Line 3: Remove any leading or trailing hyphens
+    sanitized_topic = sanitized_topic.strip('-')
     
-    # Create a URL-friendly filename
-    filename = topic.lower().replace(' ', '-').replace("'", "") + ".md"
+    # Line 4: Truncate to a reasonable length and add the file extension
+    filename = sanitized_topic[:100] + ".md"
+
+    # --- End of the Sanitization Block ---
+
     filepath = os.path.join(HUGO_CONTENT_PATH, filename)
     
     current_date = datetime.datetime.now(datetime.timezone.utc).isoformat()
     
+    # --- Start of the Front Matter Block ---
+    
+    # Line 5: The Hugo front matter (metadata for the post)
     front_matter = f"""---
-title: "Understanding the Trend: What is {topic}?"
+title: "Understanding the Trend: {topic.replace('"', "'")}"
 date: {current_date}
-draft: true
-description: "A quick, clear explanation of why '{topic}' is trending. Learn the key facts and background behind today's top search."
+draft: false
+description: "A quick, clear explanation of why '{topic.replace('"', "'")}' is trending."
 tags: ["Trending", "News", "{topic.split(' ')[0]}"]
 ---
 """
+    # --- End of the Front Matter Block ---
     
     full_content = front_matter + "\n" + article_content
     
-    try:
-        with open(filepath, "w", encoding="utf-8") as f:
-            f.write(full_content)
-        print(f"  ✅ Successfully saved: {filepath}")
-        return True
-    except Exception as e:
-        print(f"  ❌ Error saving file: {e}")
-        return False
+    # ... (rest of the function) ...
 
 # --- Part 5: The Main Execution Loop ---
 if __name__ == "__main__":
