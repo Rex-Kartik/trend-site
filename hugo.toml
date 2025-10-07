@@ -1,4 +1,4 @@
 baseURL = 'https://trend-site.netlify.app/'
 languageCode = 'en-us'
-title = 'My New Hugo Site'
+title = 'Daily Tech Trends'
 theme = 'PaperMod'
