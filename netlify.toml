@@ -11,7 +11,6 @@
   HUGO_VERSION = "0.125.7"
   # We can also specify the Go programming language version, which Hugo is built with.
   GO_VERSION = "1.21.0"
-```
 
 ### **Part 3: Your Final Action Plan**
 
