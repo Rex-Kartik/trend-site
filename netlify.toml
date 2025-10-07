@@ -8,6 +8,6 @@
 # This section tells Netlify which software versions to use.
 [build.environment]
   # This is the crucial part. We are telling Netlify to use a specific, recent version of Hugo.
-  HUGO_VERSION = "0.125.7"
+  HUGO_VERSION = "0.151.0"
   # We can also specify the Go programming language version, which Hugo is built with.
-  GO_VERSION = "1.21.0"
+  GO_VERSION = "1.25.1"
