@@ -10,7 +10,6 @@ import re
 # --- Part 1: Configuration & Setup ---
 try:
     # Securely get the API key from environment variables.
-    # This is the safest way to handle credentials.
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
         raise ValueError("GEMINI_API_KEY environment variable not set.")
@@ -22,7 +21,7 @@ except ValueError as e:
 # Use the latest stable and fast model from Google.
 model = genai.GenerativeModel('gemini-2.5-flash')
 
-# DYNAMIC PATHS: These will work on ANY computer (your local Windows PC or the Linux GitHub robot).
+# DYNAMIC PATHS: These will work on ANY computer (your local PC or the GitHub robot).
 # This gets the directory where the script itself is located.
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 # This intelligently joins the paths, using the correct slashes ('\' or '/') for the OS.
@@ -30,75 +29,91 @@ HUGO_CONTENT_PATH = os.path.join(SCRIPT_DIR, "content", "posts")
 PROCESSED_LOG_FILE = os.path.join(SCRIPT_DIR, "processed_topics.txt")
 
 
-# --- Part 2: The Trend Spotter (Final Version: Google News RSS) ---
-def get_trending_topics(country_code='IN'):
+# --- Part 2: The Intelligent Topic Curation Engine ---
+def get_and_filter_topics():
     """
-    Fetches top news headlines from the official Google News RSS feed.
-    This is the most stable and dependency-free method.
+    Fetches headlines from multiple niche RSS feeds and uses an AI to select
+    the most relevant trending topics.
     """
-    print("📈 Fetching top headlines from the stable Google News RSS feed...")
-    # This is the correct, working URL for top stories in India (English).
-    RSS_URL = "https://news.google.com/rss?hl=en-IN&gl=IN&ceid=IN:en"
+    print("🧠 Starting topic curation engine...")
+    
+    # Step A: Gather Intelligence from Multiple Specialized Sources
+    source_urls = {
+        "Technology": "https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRGRqTVhZU0JXVnVMVWRDR2dKSlRpZ0FQAQ?hl=en-IN&gl=IN&ceid=IN:en",
+        "Science": "https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRFp0Y1RjU0JXVnVMVWRDR2dKSlRpZ0FQAQ?hl=en-IN&gl=IN&ceid=IN:en",
+        # We use a reliable industry source for gaming news.
+        "Gaming": "https://www.gamespot.com/feeds/news"
+    }
+    
+    raw_headlines = []
+    print("  📰 Gathering headlines from sources...")
+    for category, url in source_urls.items():
+        try:
+            response = requests.get(url, timeout=10) # Added a timeout for safety
+            response.raise_for_status()
+            root = ET.fromstring(response.content)
+            for item in root.findall('./channel/item'):
+                title = item.find('title').text
+                if title:
+                    raw_headlines.append(title.strip())
+        except Exception as e:
+            print(f"    - Could not fetch from {category}: {e}")
+
+    if not raw_headlines:
+        print("  ❌ No headlines gathered. Exiting.")
+        return []
+
+    # Step B: Use AI to Identify and Filter the Best Topics
+    print(f"  🤖 Sending {len(raw_headlines)} headlines to AI for filtering...")
+    
+    headlines_text = "\n".join(raw_headlines)
+    
+    prompt = f"""
+    Act as a senior editor for a tech, science, and gaming news website.
+    From the following list of raw news headlines, identify the most significant and interesting
+    trending TOPICS. A topic is a specific product, event, or discovery (e.g., "iPhone 20 Launch",
+    "James Webb Telescope Discovery", "New Elden Ring DLC").
+
+    Do not just repeat the headlines. Extract the core subject.
+    Filter out minor stories, political news, and anything not directly related to technology,
+    science, or video games.
+
+    Return a list of the top 10 most important topics, separated by a pipe character '|'.
+
+    Example Output: iPhone 20 Launch|James Webb Telescope Discovery|New Elden Ring DLC
+
+    --- HEADLINES ---
+    {headlines_text}
+    """
     
     try:
-        # Use 'requests' to get the content from the URL.
-        response = requests.get(RSS_URL)
-        response.raise_for_status() # This will raise an error if the request failed (like a 404).
-        
-        # Parse the response, which is in a standard XML format.
-        root = ET.fromstring(response.content)
-        
-        topics = []
-        # An RSS feed contains a 'channel' which contains multiple 'item's.
-        # We loop through each 'item' to find its 'title'.
-        for item in root.findall('./channel/item'):
-            title = item.find('title').text
-            if title:
-                # News headlines often have the source at the end, like "- BBC News".
-                # This line of code cleans that up for a better topic.
-                cleaned_title = title.rsplit(' - ', 1)[0]
-                topics.append(cleaned_title)
-        
-        if not topics:
-            print("  ⚠️ No topics found in the RSS feed.")
-            return []
-
-        print(f"  ✅ Found {len(topics)} topics.")
-        # We will only process the top 10 to keep the content fresh and focused.
-        return topics[:10]
-
-    except requests.exceptions.RequestException as e:
-        print(f"  ❌ Error fetching RSS feed: {e}")
-        return []
-    except ET.ParseError as e:
-        print(f"  ❌ Error parsing XML from RSS feed: {e}")
+        response = model.generate_content(prompt)
+        # Parse the response: split the string by '|' and clean up any whitespace
+        filtered_topics = [topic.strip() for topic in response.text.split('|')]
+        print(f"  ✅ AI selected {len(filtered_topics)} relevant topics.")
+        return filtered_topics
+    except Exception as e:
+        print(f"  ❌ AI filtering failed: {e}")
         return []
 
 
 # --- Part 3: The AI Writer ---
 def generate_article(topic):
     """Generates a news-style explanatory article for a given trending topic."""
-    print(f"🤖 Generating article for: '{topic}'...")
-    
-    # This prompt is engineered to be journalistic and objective.
+    print(f"✍️  Generating article for: '{topic}'...")
     prompt = f"""
     Act as a neutral and objective news explainer. Your audience is the general public
     who has just heard about "{topic}" and wants to understand what it is.
-
     Write a concise, easy-to-understand article (around 400-500 words) explaining the topic: "{topic}".
-
     Your article must include:
-    1.  A direct and clear introduction explaining what "{topic}" is and why it's a top headline.
-    2.  2-3 key bullet points providing the most important facts or context.
-    3.  A brief paragraph on the background or significance of the topic.
+    1.  A direct and clear introduction explaining the topic.
+    2.  2-3 key bullet points providing the most important facts.
+    3.  A brief paragraph on the background or significance.
     4.  A concluding sentence summarizing its importance.
-
-    Do not use sensational language. The tone should be informative and factual.
-    The final output should be a single block of text in Markdown format.
+    The tone should be informative and factual. The final output should be in Markdown format.
     """
     try:
         response = model.generate_content(prompt)
-        # Basic safety check to see if the content was blocked.
         if response.prompt_feedback.block_reason:
             print(f"  ⚠️ Content blocked for topic '{topic}'. Reason: {response.prompt_feedback.block_reason}")
             return None
@@ -116,7 +131,7 @@ def save_for_hugo(topic, article_content):
     """
     print(f"💾 Saving file for '{topic}'...")
 
-    # --- Start of the Sanitization Block ---
+    # Sanitize the topic to create a valid filename
     # 1. Convert to lowercase
     sanitized_topic = topic.lower()
     # 2. Replace spaces and all non-alphanumeric characters with a hyphen
@@ -125,27 +140,23 @@ def save_for_hugo(topic, article_content):
     sanitized_topic = sanitized_topic.strip('-')
     # 4. Truncate to a reasonable length to prevent "filename too long" errors
     filename = sanitized_topic[:100] + ".md"
-    # --- End of the Sanitization Block ---
 
     filepath = os.path.join(HUGO_CONTENT_PATH, filename)
     
     current_date = datetime.datetime.now(datetime.timezone.utc).isoformat()
     
-    # --- Start of the Front Matter Block ---
     # Use the original, human-readable topic for the title.
     # Replace any double quotes in the title to prevent breaking the TOML format.
     front_matter = f"""---
-title: "Understanding the Trend: {topic.replace('"', "'")}"
+title: "Explaining the Trend: {topic.replace('"', "'")}"
 date: {current_date}
 draft: false
-description: "A quick, clear explanation of why '{topic.replace('"', "'")}' is trending."
-tags: ["Trending", "News", "{topic.split(' ')[0]}"]
+description: "A quick, clear explanation of the trending topic: {topic.replace('"', "'")}"
+tags: ["Trending", "{topic.split(' ')[0]}"]
 ---
 """
-    # --- End of the Front Matter Block ---
     
     full_content = front_matter + "\n" + article_content
-    
     try:
         with open(filepath, "w", encoding="utf-8") as f:
             f.write(full_content)
@@ -158,37 +169,37 @@ tags: ["Trending", "News", "{topic.split(' ')[0]}"]
 
 # --- Part 5: The Main Execution Loop ---
 if __name__ == "__main__":
-    print("\n🚀 Starting the Automated Trend Blogger...")
-
-    # Load already processed topics to avoid writing duplicate articles.
+    print("\n🚀 Starting the AI Curation Blogger...")
+    
     try:
         with open(PROCESSED_LOG_FILE, 'r') as f:
             processed_topics = set(f.read().splitlines())
     except FileNotFoundError:
         processed_topics = set()
     
-    trending_topics = get_trending_topics()
+    # The main change is calling our new function here
+    trending_topics = get_and_filter_topics()
     
     if not trending_topics:
-        print("No topics to process. Exiting.")
+        print("No new topics to process after filtering. Exiting.")
         exit()
 
     new_topics_found = 0
     for topic in trending_topics:
-        if topic not in processed_topics:
+        # Also check if the topic is not an empty string
+        if topic not in processed_topics and topic:
             new_topics_found += 1
             article = generate_article(topic)
             if article:
                 if save_for_hugo(topic, article):
-                    # Log the topic as processed only if it was saved successfully.
                     with open(PROCESSED_LOG_FILE, 'a') as f:
                         f.write(topic + '\n')
             
-            # Pause between topics to be respectful to the API.
             print("--- Pausing for 15 seconds ---")
             time.sleep(15)
     
     if new_topics_found == 0:
-        print("✅ No new trends to report. Everything is up to date.")
+        print("✅ No new topics to report. Everything is up to date.")
 
     print(" ciclo de trabajo completado.")
+
