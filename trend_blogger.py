@@ -78,7 +78,8 @@ def get_and_filter_topics():
     Filter out minor stories, political news, and anything not directly related to technology,
     science, or video games.
 
-    Return a list of the top 10 most important topics, separated by a pipe character '|'.
+    Return only a list of the top 10 most important topics, separated by a pipe character '|' and 
+    not anything else like 'Here are the top 10 most significant and interesting trending topics from the raw news headlines:'.
 
     Example Output: iPhone 20 Launch|James Webb Telescope Discovery|New Elden Ring DLC
 
