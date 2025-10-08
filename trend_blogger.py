@@ -188,7 +188,7 @@ def save_for_hugo(topic, article_content):
     
     # This is the metadata block (front matter) that goes at the top of every Hugo article.
     front_matter = f"""---
-title: "Decoding the Trend: {topic.replace('"', "'")}"
+title: "{topic.replace('"', "'")}"
 date: {current_date}
 draft: false
 description: "An in-depth look at the emerging trend of {topic.replace('"', "'")} and what it means for the future."

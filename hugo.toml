@@ -29,6 +29,8 @@ enableRobotsTXT = true
   [params.author]
     name = "Rex Kartik"
   
+  showSearch = true
+
   # Site description for search engines.
   description = "Synthesizing the latest trends in Technology, Science, and Gaming through the power of AI."
 
@@ -56,10 +58,10 @@ enableRobotsTXT = true
 # This controls the links at the top right.
 [menu]
   [[menu.main]]
-    # This is the search button! It's a special entry in this theme.
-    name = "Search"
-    pageRef = "search"
-    weight = 10
+    name = "All Posts"
+    pageRef = "posts"
+    weight = 5
+
   [[menu.main]]
     name = "Home"
     url = "/"

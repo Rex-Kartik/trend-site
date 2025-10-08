@@ -1,5 +1,5 @@
 ---
-title: "Decoding the Trend: Groundbreaking Innovations in Materials Science"
+title: "Groundbreaking Innovations in Materials Science"
 date: 2025-10-08T15:42:07.971580+00:00
 draft: false
 description: "An in-depth look at the emerging trend of Groundbreaking Innovations in Materials Science and what it means for the future."

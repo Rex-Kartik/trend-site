@@ -1,5 +1,5 @@
 ---
-title: "Decoding the Trend: The Unprecedented Importance of Digital Infrastructure"
+title: "The Unprecedented Importance of Digital Infrastructure"
 date: 2025-10-08T15:41:32.543519+00:00
 draft: false
 description: "An in-depth look at the emerging trend of The Unprecedented Importance of Digital Infrastructure and what it means for the future."

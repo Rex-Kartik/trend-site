@@ -1,5 +1,5 @@
 ---
-title: "Decoding the Trend: Accountability and Regulation of Digital Platforms"
+title: "Accountability and Regulation of Digital Platforms"
 date: 2025-10-08T15:40:13.207787+00:00
 draft: false
 description: "An in-depth look at the emerging trend of Accountability and Regulation of Digital Platforms and what it means for the future."
