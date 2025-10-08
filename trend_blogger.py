@@ -47,8 +47,8 @@ except Exception as e:
     print(f"ERROR: A required environment variable is likely missing: {e}")
     exit()
 
-# Initialize the Gemini model we want to use. 'gemini-1.5-flash-latest' is fast and powerful.
-model = genai.GenerativeModel('gemini-1.5-flash-latest')
+# Initialize the Gemini model we want to use. 'gemini-2.5-flash' is fast and powerful.
+model = genai.GenerativeModel('gemini-2.5-flash')
 
 # DYNAMIC PATHS: These ensure the script works on any computer (your Windows PC or the Linux GitHub robot).
 # Get the absolute path of the directory where this script is located.
