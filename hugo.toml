@@ -32,8 +32,6 @@ enableRobotsTXT = true
 [params]
   # The description for your site, used by search engines.
   description = "Synthesizing the latest trends in Technology, Science, and Gaming through the power of AI."
-
-  customCss = ["css/custom.css"]
   
   # Sets the default color scheme to dark mode.
   defaultAppearance = "dark"
