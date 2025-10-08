@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml">
+
+  <url>
+    <loc>http://localhost:1313/</loc>
+    <lastmod>2025-10-08T09:58:43+00:00</lastmod>
+  </url>
+  <url>
+    <loc>http://localhost:1313/posts/re-evaluating-health-wellness-paradigms/</loc>
+    <lastmod>2025-10-08T09:58:43+00:00</lastmod>
+  </url>
+  <url>
+    <loc>http://localhost:1313/posts/</loc>
+    <lastmod>2025-10-08T09:58:43+00:00</lastmod>
+  </url>
+  <url>
+    <loc>http://localhost:1313/posts/digital-privacy-surveillance-consumer-rights-in-the-tech-age/</loc>
+    <lastmod>2025-10-08T09:58:10+00:00</lastmod>
+  </url>
+  <url>
+    <loc>http://localhost:1313/posts/the-evolution-of-gaming-indie-success-live-service-challenges/</loc>
+    <lastmod>2025-10-08T09:57:32+00:00</lastmod>
+  </url>
+  <url>
+    <loc>http://localhost:1313/posts/breakthroughs-in-neuroscience-and-health-diagnostics/</loc>
+    <lastmod>2025-10-08T09:56:58+00:00</lastmod>
+  </url>
+  <url>
+    <loc>http://localhost:1313/posts/ai-s-expanding-influence-and-ethical-backlash/</loc>
+    <lastmod>2025-10-08T09:56:28+00:00</lastmod>
+  </url>
+  <url>
+    <loc>http://localhost:1313/search/</loc>
+  </url>
+</urlset>

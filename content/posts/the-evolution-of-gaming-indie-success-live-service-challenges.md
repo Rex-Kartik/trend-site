@@ -1,5 +1,5 @@
 ---
-title: "Decoding the Trend: The Evolution of Gaming: Indie Success & Live Service Challenges"
+title: "The Evolution of Gaming: Indie Success & Live Service Challenges"
 date: 2025-10-08T09:57:32.374163+00:00
 draft: false
 description: "An in-depth look at the emerging trend of The Evolution of Gaming: Indie Success & Live Service Challenges and what it means for the future."

@@ -1,5 +1,5 @@
 ---
-title: "Decoding the Trend: Digital Privacy, Surveillance & Consumer Rights in the Tech Age"
+title: "Digital Privacy, Surveillance & Consumer Rights in the Tech Age"
 date: 2025-10-08T09:58:10.613454+00:00
 draft: false
 description: "An in-depth look at the emerging trend of Digital Privacy, Surveillance & Consumer Rights in the Tech Age and what it means for the future."

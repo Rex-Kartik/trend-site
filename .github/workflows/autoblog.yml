@@ -21,8 +21,8 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip setuptools wheel
-          # Added praw for Reddit and pytrends for Google Trends
-          pip install google-generativeai requests praw pytrends
+          # Removed pytrends, added google-search-results for SerpApi
+          pip install google-generativeai requests praw google-search-results
       - name: Ensure content directory exists
         run: mkdir -p content/posts
       - name: Run the AI Curation Engine
@@ -31,6 +31,8 @@ jobs:
           REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
           REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
           REDDIT_USER_AGENT: ${{ secrets.REDDIT_USER_AGENT }}
+          # Add the new SerpApi key
+          SERPAPI_API_KEY: ${{ secrets.SERPAPI_API_KEY }}
         run: python trend_blogger.py
       - name: Commit new posts
         run: |
@@ -39,4 +41,3 @@ jobs:
           git add .
           git diff --quiet && git diff --staged --quiet || git commit -m "AUTOBOT: Add new synthesized trend articles for $(date +'%Y-%m-%d')"
           git push
-

@@ -1,5 +1,5 @@
 ---
-title: "Decoding the Trend: AI's Expanding Influence and Ethical Backlash"
+title: "AI's Expanding Influence and Ethical Backlash"
 date: 2025-10-08T09:56:28.392494+00:00
 draft: false
 description: "An in-depth look at the emerging trend of AI's Expanding Influence and Ethical Backlash and what it means for the future."

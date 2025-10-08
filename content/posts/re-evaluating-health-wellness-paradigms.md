@@ -1,5 +1,5 @@
 ---
-title: "Decoding the Trend: Re-evaluating Health & Wellness Paradigms"
+title: "Re-evaluating Health & Wellness Paradigms"
 date: 2025-10-08T09:58:43.481519+00:00
 draft: false
 description: "An in-depth look at the emerging trend of Re-evaluating Health & Wellness Paradigms and what it means for the future."

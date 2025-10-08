@@ -1,4 +1,66 @@
-baseURL = 'https://daily-tech-trend.netlify.app/'
-languageCode = 'en-us'
-title = 'The Tech, Science and  Games Trends'
-theme = 'PaperMod'
+# This MUST be your real, live website address.
+baseURL = "https://daily-tech-trend.netlify.app/"
+
+# This tells Hugo to use the new theme.
+theme = "blowfish"
+
+# This is your new site title.
+title = "Daily Tech Trend"
+
+# --- Main Configuration ---
+defaultContentLanguage = "en"
+[pagination]
+  pagerSize = 10
+enableRobotsTXT = true
+
+# --- OUTPUTS - CRITICAL FOR SEARCH ---
+# This tells Hugo to generate a special JSON file that the search function needs.
+[outputs]
+  home = ["HTML", "RSS", "JSON"]
+
+# --- TAXONOMIES ---
+[taxonomies]
+  tag = "tags"
+  category = "categories"
+
+# --- PARAMS - Theme-Specific Settings ---
+[params]
+  # Your name, which appears in the footer.
+  [params.author]
+    name = "Rex Kartik"
+  
+  # Site description for search engines.
+  description = "Synthesizing the latest trends in Technology, Science, and Gaming through the power of AI."
+
+  # Set the default appearance to dark mode for that sci-fi feel.
+  defaultAppearance = "dark" # can be "light" or "dark"
+
+  # Custom logo settings.
+    logo = "img/logo.svg" # We can create a simple logo later.
+
+  # Homepage settings - this creates the cool card layout.
+  [params.homepage]
+    layout = "card" # can be "card", "list", or "profile"
+    showRecent = true
+    recentLimit = 15
+
+  # Article page settings.
+  [params.article]
+    showDate = true
+    showViews = false
+    showLikes = false
+    showReadingTime = true
+    showTableOfContents = true
+
+# --- MENU ---
+# This controls the links at the top right.
+[menu]
+  [[menu.main]]
+    # This is the search button! It's a special entry in this theme.
+    name = "Search"
+    pageRef = "search"
+    weight = 10
+  [[menu.main]]
+    name = "Home"
+    url = "/"
+    weight = -10
