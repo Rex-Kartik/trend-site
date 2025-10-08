@@ -3,11 +3,11 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
 
   <url>
-    <loc>http://localhost:1313/</loc>
+    <loc>http://localhost:1313/posts/groundbreaking-innovations-in-materials-science/</loc>
     <lastmod>2025-10-08T15:42:07+00:00</lastmod>
   </url>
   <url>
-    <loc>http://localhost:1313/posts/groundbreaking-innovations-in-materials-science/</loc>
+    <loc>http://localhost:1313/</loc>
     <lastmod>2025-10-08T15:42:07+00:00</lastmod>
   </url>
   <url>
@@ -49,8 +49,5 @@
   <url>
     <loc>http://localhost:1313/posts/ai-s-expanding-influence-and-ethical-backlash/</loc>
     <lastmod>2025-10-08T09:56:28+00:00</lastmod>
-  </url>
-  <url>
-    <loc>http://localhost:1313/search/</loc>
   </url>
 </urlset>

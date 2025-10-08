@@ -1,52 +1,61 @@
 # This MUST be your real, live website address.
-baseURL = "https://daily-tech-trend.netlify.app/"
+baseURL = "https://daily-tech-trends.netlify.app/"
 
-# This tells Hugo to use the new theme.
+# This tells Hugo to use the Blowfish theme.
 theme = "blowfish"
 
-# This is your new site title.
-title = "Daily Tech Trend"
+# This is your website's main title, which appears in the header.
+title = "The Trend Nexus"
 
-# --- Main Configuration ---
+# --- Main Hugo Configuration ---
 defaultContentLanguage = "en"
-[pagination]
-  pagerSize = 10
 enableRobotsTXT = true
 
+# This section enables the "Next" / "Previous" page buttons on archive pages.
+# It uses the modern, correct syntax for recent Hugo versions.
+[pagination]
+  pagerSize = 10
+
 # --- OUTPUTS - CRITICAL FOR SEARCH ---
-# This tells Hugo to generate a special JSON file that the search function needs.
+# This tells Hugo to generate a JSON data file from your content,
+# which the search function needs to work.
 [outputs]
   home = ["HTML", "RSS", "JSON"]
 
 # --- TAXONOMIES ---
+# This defines the types of classifications for your posts (tags and categories).
 [taxonomies]
   tag = "tags"
   category = "categories"
 
-# --- PARAMS - Theme-Specific Settings ---
+# --- PARAMS - Theme-Specific Settings for Blowfish ---
 [params]
-  # Your name, which appears in the footer.
-  [params.author]
-    name = "Rex Kartik"
-  
-  showSearch = true
-
-  # Site description for search engines.
+  # The description for your site, used by search engines.
   description = "Synthesizing the latest trends in Technology, Science, and Gaming through the power of AI."
 
-  # Set the default appearance to dark mode for that sci-fi feel.
-  defaultAppearance = "dark" # can be "light" or "dark"
+  customCss = ["css/custom.css"]
+  
+  # Sets the default color scheme to dark mode.
+  defaultAppearance = "dark"
 
-  # Custom logo settings.
-    logo = "img/logo.svg" # We can create a simple logo later.
+  # Tells the theme where to find your logo file (in assets/img/logo.svg).
+  logo = "img/logo.svg"
 
-  # Homepage settings - this creates the cool card layout.
+  # Explicitly enables the search icon in the header.
+  showSearch = true
+
+  # This correctly structures the author information as a table.
+  [params.author]
+    name = "Rex Kartik"
+
+  # This sets the homepage layout to the "profile" style,
+  # which is designed for a hero section and fixes the large gap.
   [params.homepage]
-    layout = "card" # can be "card", "list", or "profile"
+    layout = "profile"
     showRecent = true
     recentLimit = 15
 
-  # Article page settings.
+  # Configures what information is shown on individual article pages.
   [params.article]
     showDate = true
     showViews = false
@@ -55,13 +64,16 @@ enableRobotsTXT = true
     showTableOfContents = true
 
 # --- MENU ---
-# This controls the links at the top right.
+# This controls the navigation links in your website's header.
+# We have removed the "Search" page link to only use the icon.
 [menu]
+  # This creates the link to the "All Posts" archive page.
   [[menu.main]]
     name = "All Posts"
     pageRef = "posts"
     weight = 5
-
+    
+  # This creates the link back to the homepage.
   [[menu.main]]
     name = "Home"
     url = "/"
