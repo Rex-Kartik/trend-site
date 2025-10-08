@@ -3,120 +3,118 @@ import google.generativeai as genai
 import os
 import time
 import datetime
-import requests
-import xml.etree.ElementTree as ET
 import re
+import praw
+from pytrends.request import TrendReq
 
 # --- Part 1: Configuration & Setup ---
 try:
-    # Securely get the API key from environment variables.
-    api_key = os.environ.get("GEMINI_API_KEY")
-    if not api_key:
-        raise ValueError("GEMINI_API_KEY environment variable not set.")
-    genai.configure(api_key=api_key)
-except ValueError as e:
-    print(e)
+    # Securely configure the Gemini AI client
+    genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
+    
+    # Securely configure the Reddit client (PRAW)
+    reddit = praw.Reddit(
+        client_id=os.environ.get("REDDIT_CLIENT_ID"),
+        client_secret=os.environ.get("REDDIT_CLIENT_SECRET"),
+        user_agent=os.environ.get("REDDIT_USER_AGENT"),
+        check_for_async=False # Necessary for use in a synchronous script
+    )
+except Exception as e:
+    print(f"ERROR: A required environment variable is likely missing: {e}")
     exit()
 
-# Use the latest stable and fast model from Google.
-model = genai.GenerativeModel('gemini-2.5-flash')
+# Use the latest stable and fast model from Google
+model = genai.GenerativeModel('gemini-1.5-flash-latest')
 
 # DYNAMIC PATHS: These will work on ANY computer (your local PC or the GitHub robot).
-# This gets the directory where the script itself is located.
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-# This intelligently joins the paths, using the correct slashes ('\' or '/') for the OS.
 HUGO_CONTENT_PATH = os.path.join(SCRIPT_DIR, "content", "posts")
 PROCESSED_LOG_FILE = os.path.join(SCRIPT_DIR, "processed_topics.txt")
 
 
 # --- Part 2: The Intelligent Topic Curation Engine ---
-def get_and_filter_topics():
+def get_and_synthesize_topics():
     """
-    Fetches headlines from multiple niche RSS feeds and uses an AI to select
-    the most relevant trending topics.
+    Gathers raw signals from Google Trends and Reddit, then uses an AI to
+    synthesize them into high-level, relevant trend topics.
     """
-    print("🧠 Starting topic curation engine...")
-    
-    # Step A: Gather Intelligence from Multiple Specialized Sources
-    source_urls = {
-        "Technology": "https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRGRqTVhZU0JXVnVMVWRDR2dKSlRpZ0FQAQ?hl=en-IN&gl=IN&ceid=IN:en",
-        "Science": "https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRFp0Y1RjU0JXVnVMVWRDR2dKSlRpZ0FQAQ?hl=en-IN&gl=IN&ceid=IN:en",
-        # We use a reliable industry source for gaming news.
-        "Gaming": "https://www.gamespot.com/feeds/news"
-    }
-    
-    raw_headlines = []
-    print("  📰 Gathering headlines from sources...")
-    for category, url in source_urls.items():
-        try:
-            response = requests.get(url, timeout=10) # Added a timeout for safety
-            response.raise_for_status()
-            root = ET.fromstring(response.content)
-            for item in root.findall('./channel/item'):
-                title = item.find('title').text
-                if title:
-                    raw_headlines.append(title.strip())
-        except Exception as e:
-            print(f"    - Could not fetch from {category}: {e}")
+    print("🧠 Starting trend synthesis engine...")
+    raw_signals = []
 
-    if not raw_headlines:
-        print("  ❌ No headlines gathered. Exiting.")
+    # Step A: Gather Google Trends Signals
+    print("  📈 Gathering signals from Google Trends...")
+    try:
+        pytrends = TrendReq(hl='en-US', tz=330) # IST
+        # Fetch trending searches in India
+        trending_df = pytrends.trending_searches(pn='india')
+        raw_signals.extend(trending_df[0].tolist())
+    except Exception as e:
+        print(f"    - Could not fetch from Google Trends: {e}")
+    
+    # Step B: Gather Reddit Signals
+    print("  💬 Gathering signals from Reddit...")
+    subreddits = ['technology', 'science', 'gaming']
+    for sub in subreddits:
+        try:
+            # Get the top 10 'hot' posts from the subreddit
+            subreddit = reddit.subreddit(sub)
+            for submission in subreddit.hot(limit=10):
+                if not submission.stickied: # Ignore moderator-pinned posts
+                    raw_signals.append(submission.title)
+        except Exception as e:
+            print(f"    - Could not fetch from r/{sub}: {e}")
+
+    if not raw_signals:
+        print("  ❌ No raw signals gathered. Exiting.")
         return []
 
-    # Step B: Use AI to Identify and Filter the Best Topics
-    print(f"  🤖 Sending {len(raw_headlines)} headlines to AI for filtering...")
-    
-    headlines_text = "\n".join(raw_headlines)
+    # Step C: Use AI to Synthesize Trends from Signals
+    print(f"  🤖 Sending {len(raw_signals)} raw signals to AI for synthesis...")
+    signals_text = "\n".join(raw_signals)
     
     prompt = f"""
-    Act as a senior editor for a tech, science, and gaming news website.
-    From the following list of raw news headlines, identify the most significant and interesting
-    trending TOPICS. A topic is a specific product, event, or discovery (e.g., "iPhone 20 Launch",
-    "James Webb Telescope Discovery", "New Elden Ring DLC").
+    Act as a professional trend analyst for a website focused on technology, science, and gaming.
+    Based on the following list of raw Google search queries and Reddit discussion titles, your task is to identify and synthesize the 5 most significant, high-level TRENDS.
 
-    Do not just repeat the headlines. Extract the core subject.
-    Filter out minor stories, political news, and anything not directly related to technology,
-    science, or video games.
+    A trend is a broader topic, not just a single news event. For example, if you see signals like 'Nvidia RTX 5090 price', 'AMD RDNA 5 release date', and 'Intel Battlemage specs', the underlying trend is "The Next Generation of GPUs".
 
-    Return only a list of the top 10 most important topics, separated by a pipe character '|' and 
-    not anything else like 'Here are the top 10 most significant and interesting trending topics from the raw news headlines:'.
+    Filter out all noise, celebrity gossip, politics, and minor news. Focus only on genuinely interesting trends in tech, science, or gaming.
+    Return a list of the top 5 most important trends, separated by a pipe character '|'.
 
-    Example Output: iPhone 20 Launch|James Webb Telescope Discovery|New Elden Ring DLC
+    Example Output: The Next Generation of GPUs|Breakthroughs in AI Drug Discovery|The Rise of Indie Game Development
 
-    --- HEADLINES ---
-    {headlines_text}
+    --- RAW SIGNALS ---
+    {signals_text}
     """
     
     try:
         response = model.generate_content(prompt)
         # Parse the response: split the string by '|' and clean up any whitespace
-        filtered_topics = [topic.strip() for topic in response.text.split('|')]
-        print(f"  ✅ AI selected {len(filtered_topics)} relevant topics.")
-        return filtered_topics
+        synthesized_trends = [topic.strip() for topic in response.text.split('|')]
+        print(f"  ✅ AI synthesized {len(synthesized_trends)} relevant trends.")
+        return synthesized_trends
     except Exception as e:
-        print(f"  ❌ AI filtering failed: {e}")
+        print(f"  ❌ AI synthesis failed: {e}")
         return []
 
 
 # --- Part 3: The AI Writer ---
 def generate_article(topic):
-    """Generates a news-style explanatory article for a given trending topic."""
-    print(f"✍️  Generating article for: '{topic}'...")
+    """Generates an in-depth explanatory article for a given trend."""
+    print(f"✍️  Generating article for trend: '{topic}'...")
     prompt = f"""
-    Act as a neutral and objective news explainer. Your audience is the general public
-    who has just heard about "{topic}" and wants to understand what it is.
-    Write a concise, easy-to-understand article (around 400-500 words) explaining the topic: "{topic}".
+    Act as an expert analyst explaining a major trend to a curious audience. Your audience is familiar with the basics of tech, science, and gaming but wants a deeper understanding of what's happening.
+    Write a clear, insightful article (around 500-600 words) explaining the trend: "{topic}".
     Your article must include:
-    1.  A direct and clear introduction explaining the topic.
-    2.  2-3 key bullet points providing the most important facts.
-    3.  A brief paragraph on the background or significance.
-    4.  A concluding sentence summarizing its importance.
-    The tone should be informative and factual. The final output should be in Markdown format.
+    1.  An introduction that defines the trend and explains why it's significant right now.
+    2.  2-3 body paragraphs, each exploring a key aspect of the trend (e.g., the key players, the technology involved, the potential impact).
+    3.  A concluding paragraph that looks to the future of this trend.
+    The tone should be authoritative but accessible. The final output should be in Markdown format.
     """
     try:
         response = model.generate_content(prompt)
         if response.prompt_feedback.block_reason:
-            print(f"  ⚠️ Content blocked for topic '{topic}'. Reason: {response.prompt_feedback.block_reason}")
+            print(f"  ⚠️ Content blocked for trend '{topic}'. Reason: {response.prompt_feedback.block_reason}")
             return None
         return response.text
     except Exception as e:
@@ -133,13 +131,12 @@ def save_for_hugo(topic, article_content):
     print(f"💾 Saving file for '{topic}'...")
 
     # Sanitize the topic to create a valid filename
-    # 1. Convert to lowercase
     sanitized_topic = topic.lower()
-    # 2. Replace spaces and all non-alphanumeric characters with a hyphen
+    # Replace spaces and all non-alphanumeric characters with a hyphen
     sanitized_topic = re.sub(r'[\s\W_]+', '-', sanitized_topic)
-    # 3. Remove any leading or trailing hyphens that might result
+    # Remove any leading or trailing hyphens that might result
     sanitized_topic = sanitized_topic.strip('-')
-    # 4. Truncate to a reasonable length to prevent "filename too long" errors
+    # Truncate to a reasonable length to prevent "filename too long" errors
     filename = sanitized_topic[:100] + ".md"
 
     filepath = os.path.join(HUGO_CONTENT_PATH, filename)
@@ -149,11 +146,11 @@ def save_for_hugo(topic, article_content):
     # Use the original, human-readable topic for the title.
     # Replace any double quotes in the title to prevent breaking the TOML format.
     front_matter = f"""---
-title: "Explaining the Trend: {topic.replace('"', "'")}"
+title: "Decoding the Trend: {topic.replace('"', "'")}"
 date: {current_date}
 draft: false
-description: "A quick, clear explanation of the trending topic: {topic.replace('"', "'")}"
-tags: ["Trending", "{topic.split(' ')[0]}"]
+description: "An in-depth look at the emerging trend of {topic.replace('"', "'")} and what it means for the future."
+tags: ["Trends", "{topic.split(' ')[0]}"]
 ---
 """
     
@@ -170,7 +167,7 @@ tags: ["Trending", "{topic.split(' ')[0]}"]
 
 # --- Part 5: The Main Execution Loop ---
 if __name__ == "__main__":
-    print("\n🚀 Starting the AI Curation Blogger...")
+    print("\n🚀 Starting the AI Trend Synthesis Engine...")
     
     try:
         with open(PROCESSED_LOG_FILE, 'r') as f:
@@ -178,11 +175,11 @@ if __name__ == "__main__":
     except FileNotFoundError:
         processed_topics = set()
     
-    # The main change is calling our new function here
-    trending_topics = get_and_filter_topics()
+    # Call our new, intelligent synthesis function
+    trending_topics = get_and_synthesize_topics()
     
     if not trending_topics:
-        print("No new topics to process after filtering. Exiting.")
+        print("No new trends to process after synthesis. Exiting.")
         exit()
 
     new_topics_found = 0
@@ -196,11 +193,12 @@ if __name__ == "__main__":
                     with open(PROCESSED_LOG_FILE, 'a') as f:
                         f.write(topic + '\n')
             
-            print("--- Pausing for 15 seconds ---")
-            time.sleep(15)
+            # A longer pause for a more intensive process
+            print("--- Pausing for 20 seconds ---")
+            time.sleep(20)
     
     if new_topics_found == 0:
-        print("✅ No new topics to report. Everything is up to date.")
+        print("✅ No new trends to report. All synthesized trends have been processed.")
 
     print(" ciclo de trabajo completado.")
 
