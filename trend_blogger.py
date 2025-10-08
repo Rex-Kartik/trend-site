@@ -24,7 +24,7 @@ except Exception as e:
     exit()
 
 # Use the latest stable and fast model from Google
-model = genai.GenerativeModel('gemini-1.5-flash-latest')
+model = genai.GenerativeModel('gemini-2.5-flash')
 
 # DYNAMIC PATHS: These will work on ANY computer (your local PC or the GitHub robot).
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
