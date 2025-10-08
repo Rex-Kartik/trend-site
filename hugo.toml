@@ -1,4 +1,4 @@
-baseURL = 'https://trend-site.netlify.app/'
+baseURL = 'https://daily-tech-trend.netlify.app/'
 languageCode = 'en-us'
 title = 'The Tech, Science and  Games Trends'
 theme = 'PaperMod'
