@@ -76,3 +76,6 @@ enableRobotsTXT = true
     name = "Home"
     url = "/"
     weight = -10
+
+[services.googleAnalytics]
+  ID = "G-K53M7ELP7W"
