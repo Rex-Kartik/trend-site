@@ -109,7 +109,7 @@ def get_and_synthesize_topics():
     A trend is a broader topic, not just a single news event. For example, if you see signals like 'Nvidia RTX 5090 price', 'AMD RDNA 5 release date', and 'Intel Battlemage specs', the underlying trend is "The Next Generation of GPUs".
 
     Filter out all noise, celebrity gossip, politics, and minor news. Focus only on genuinely interesting trends in tech, science, or gaming.
-    Return a list of the top 5 most important trends, separated by a pipe character '|'.
+    Return a list of the top 10 most important trends, separated by a pipe character '|'and nothing else.
 
     Example Output: The Next Generation of GPUs|Breakthroughs in AI Drug Discovery|The Rise of Indie Game Development
 
@@ -139,7 +139,7 @@ def generate_article_and_tags(topic):
 
     TASK 1: Act as an expert analyst explaining a major trend to a curious audience. Write a clear, insightful article (around 500-600 words) explaining the trend: "{topic}". The article should include an introduction, 2-3 body paragraphs, and a future-looking conclusion.
 
-    TASK 2: Based on the article you just wrote, generate 3 to 4 relevant, single-word, lowercase tags that are useful for SEO. The first tag should always be 'trends'.
+    TASK 2: Based on the article you just wrote, generate 5 to 10 relevant, single-word, lowercase tags that are useful for SEO. The first tag should always be 'trends'.
 
     First, write the complete article. Then, on a new line after the article, write 'tags:' followed by the comma-separated tags.
 
