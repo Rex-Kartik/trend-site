@@ -104,7 +104,7 @@ def get_and_synthesize_topics():
     
     prompt = f"""
     Act as a professional trend analyst for a website focused on technology, science, and gaming.
-    Based on the following list of raw Google search queries and Reddit discussion titles, your task is to identify and synthesize the 5 most significant, high-level TRENDS.
+    Based on the following list of raw Google search queries and Reddit discussion titles, your task is to identify and synthesize the 10 most significant, high-level TRENDS.
 
     A trend is a broader topic, not just a single news event. For example, if you see signals like 'Nvidia RTX 5090 price', 'AMD RDNA 5 release date', and 'Intel Battlemage specs', the underlying trend is "The Next Generation of GPUs".
 
