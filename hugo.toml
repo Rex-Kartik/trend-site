@@ -56,8 +56,8 @@ enableRobotsTXT = true
   # Configures what information is shown on individual article pages.
   [params.article]
     showDate = true
-    showViews = false
-    showLikes = false
+    showViews = true
+    showLikes = true
     showReadingTime = true
     showTableOfContents = true
     showRelated = true
