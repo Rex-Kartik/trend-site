@@ -62,6 +62,17 @@ enableRobotsTXT = true
     showTableOfContents = true
     showRelated = true
 
+  [params.giscus]
+        repo = "Rex-Kartik/trend-site"
+        repoId = "R_kgDOP93Cow"
+        category = "Announcements"
+        categoryId = "DIC_kwDOP93Co84CwefT"
+        mapping = "pathname"
+        reactionsEnabled = "1"
+        emitMetadata = "0"
+        theme = "dark_dimmed"
+        lang = "en"
+
 # --- MENU ---
 # This controls the navigation links in your website's header.
 # We have removed the "Search" page link to only use the icon.
