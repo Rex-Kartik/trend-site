@@ -60,6 +60,7 @@ enableRobotsTXT = true
     showLikes = false
     showReadingTime = true
     showTableOfContents = true
+    showRelated = true
 
 # --- MENU ---
 # This controls the navigation links in your website's header.
