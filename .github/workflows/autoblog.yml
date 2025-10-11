@@ -33,6 +33,7 @@ jobs:
           REDDIT_USER_AGENT: ${{ secrets.REDDIT_USER_AGENT }}
           # Add the new SerpApi key
           SERPAPI_API_KEY: ${{ secrets.SERPAPI_API_KEY }}
+          API_BASE_URL: ${{ secrets.API_BASE_URL }}
         run: python trend_blogger.py
       - name: Commit new posts
         run: |
