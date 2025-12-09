@@ -149,7 +149,7 @@ def get_and_synthesize_topics():
             }
         ).json()
         # Parse the AI's response: split the single string by '|' into a list of topics.
-synthesized_trends = [topic.strip() for topic in response['choices'][0]['message']['content'].split('|')]        print(f"  ✅ AI synthesized {len(synthesized_trends)} relevant trends.")
+        synthesized_trends = [topic.strip() for topic in response['choices'][0]['message']['content'].split('|')]        print(f"  ✅ AI synthesized {len(synthesized_trends)} relevant trends.")
         return synthesized_trends
     except Exception as e:
         print(f"  ❌ AI synthesis failed: {e}")
