@@ -1,3 +1,7 @@
+# DEPENDENCIES: requests, praw, google-search-results (serpapi)
+# For Perplexity API: uses 'requests' library for HTTP calls
+# Install: pip install requests praw google-search-results
+
 # ==============================================================================
 # AI TREND SYNTHESIS ENGINE
 # ==============================================================================
@@ -11,13 +15,15 @@
 # --- Required Imports ---
 # Import all the libraries and tools we will need to run our script.
 
-import google.generativeai as genai  # The library to talk to the Gemini AI.
+import requests				# Used for making HTTP requests to the Perplexity API.
 import os                            # Used to access environment variables and file system paths.
 import time                          # Used to make the script pause between API calls.
 import datetime                      # Used to get the current date for our articles.
 import re                            # The "Regular Expressions" library, for powerful text manipulation.
 import praw                          # The official library for interacting with the Reddit API.
 from serpapi import GoogleSearch     # The official library for the SerpApi service.
+# Optional: Uncomment the line below to use the official Perplexity SDK (if available)
+# from perplexity import Perplexity  # Alternative to using requests directly
 
 
 # --- Part 1: Configuration & Secure Setup ---
@@ -26,8 +32,8 @@ from serpapi import GoogleSearch     # The official library for the SerpApi serv
 
 try:
     # Configure the Gemini AI client using the key from GitHub Secrets.
-    genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
-    
+# Get the Perplexity API key from GitHub Secrets.
+perplexity_api_key = os.environ.get("PERPLEXITY_API_KEY")    
     # Configure the Reddit client (PRAW) using the keys from GitHub Secrets.
     # The 'check_for_async=False' is required for this library to work in a standard script.
     reddit = praw.Reddit(
@@ -48,8 +54,12 @@ except Exception as e:
     exit()
 
 # Initialize the specific Gemini model you requested.
-model = genai.GenerativeModel('gemini-2.5-flash-lite')
-
+# Set up Perplexity API endpoint and headers for Sonar model
+perplexity_api_url = "https://api.perplexity.ai/chat/completions"
+perplexity_headers = {
+    "Authorization": f"Bearer {perplexity_api_key}",
+    "Content-Type": "application/json"
+}
 # DYNAMIC PATHS: These ensure the script works on any computer (your Windows PC or the Linux GitHub robot).
 # Get the absolute path of the directory where this script is located.
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -129,10 +139,17 @@ def get_and_synthesize_topics():
     """
     
     try:
-        response = model.generate_content(prompt)
+        response = requests.post(
+            perplexity_api_url,
+            headers=perplexity_headers,
+            json={
+                "model": "sonar",
+                "messages": [{"role": "user", "content": prompt}],
+                "max_tokens": 2048
+            }
+        ).json()
         # Parse the AI's response: split the single string by '|' into a list of topics.
-        synthesized_trends = [topic.strip() for topic in response.text.split('|')]
-        print(f"  ✅ AI synthesized {len(synthesized_trends)} relevant trends.")
+synthesized_trends = [topic.strip() for topic in response['choices'][0]['message']['content'].split('|')]        print(f"  ✅ AI synthesized {len(synthesized_trends)} relevant trends.")
         return synthesized_trends
     except Exception as e:
         print(f"  ❌ AI synthesis failed: {e}")
@@ -164,15 +181,21 @@ def generate_article_and_tags(topic):
     tags: trends,ai,discovery,research
     """
     try:
-        response = model.generate_content(prompt)
-        # Safety check: if the AI's response was blocked for safety reasons, return nothing.
+response = requests.post(
+            perplexity_api_url,
+            headers=perplexity_headers,
+            json={
+                "model": "sonar",
+                "messages": [{"role": "user", "content": prompt}],
+                "max_tokens": 2048
+            }
+        ).json()        # Safety check: if the AI's response was blocked for safety reasons, return nothing.
         if response.prompt_feedback.block_reason:
             print(f"  ⚠️ Content blocked for trend '{topic}'.")
             return None
         
         # Split the AI's full response at the "tags:" marker to separate the article from the tags.
-        parts = response.text.split("\ntags:")
-        content = parts[0].strip()
+parts = response['choices'][0]['message']['content'].split("\ntags:")        content = parts[0].strip()
         tags = ["trends"] # Use a default tag in case parsing fails.
         if len(parts) > 1:
             # If the "tags:" marker was found, parse the second part into a list of strings.
