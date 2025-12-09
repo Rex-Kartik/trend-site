@@ -37,6 +37,3 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add index.html
           git commit -m "Update daily news content" |
-
-| echo "No changes to commit"
-          git push
