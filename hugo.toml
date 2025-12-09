@@ -44,7 +44,7 @@ enableRobotsTXT = true
 
   # This correctly structures the author information as a table.
   [params.author]
-    name = "Kartik, Naveen Saini, Gulshan"
+    name = "Naveen Saini, Gulshan"
 
   # This sets the homepage layout to the "profile" style,
   # which is designed for a hero section and fixes the large gap.
