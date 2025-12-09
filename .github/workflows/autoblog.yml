@@ -29,48 +29,7 @@ jobs:
       - name: Run generation script
         env:
           PERPLEXITY_API_KEY: ${{ secrets.PERPLEXITY_API_KEY }}
-        run: python name: Daily News Generator
-
-on:
-  schedule:
-    # Runs at 8:00 AM UTC every day
-    - cron: '0 8 * * *'
-  workflow_dispatch: # Allows you to click "Run" manually to test
-
-permissions:
-  contents: write
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.9'
-
-      - name: Install dependencies
-        run: |
-          pip install requests feedparser
-
-      - name: Run generation script
-        env:
-          PERPLEXITY_API_KEY: ${{ secrets.PERPLEXITY_API_KEY }}
         run: python trend_blogger.py
-
-      - name: Commit and Push changes
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add index.html
-          git commit -m "Update daily news content" |
-
-| echo "No changes to commit"
-          git push
 
       - name: Commit and Push changes
         run: |
