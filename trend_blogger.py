@@ -32,8 +32,8 @@ from serpapi import GoogleSearch     # The official library for the SerpApi serv
 
 try:
     # Configure the Gemini AI client using the key from GitHub Secrets.
-# Get the Perplexity API key from GitHub Secrets.
-perplexity_api_key = os.environ.get("PERPLEXITY_API_KEY")    
+    # Get the Perplexity API key from GitHub Secrets.
+    perplexity_api_key = os.environ.get("PERPLEXITY_API_KEY")    
     # Configure the Reddit client (PRAW) using the keys from GitHub Secrets.
     # The 'check_for_async=False' is required for this library to work in a standard script.
     reddit = praw.Reddit(
