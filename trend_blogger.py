@@ -48,7 +48,7 @@ except Exception as e:
     exit()
 
 # Initialize the specific Gemini model you requested.
-model = genai.GenerativeModel('gemini-1.5-flash')
+model = genai.GenerativeModel('gemini-2.5-flash-lite')
 
 # DYNAMIC PATHS: These ensure the script works on any computer (your Windows PC or the Linux GitHub robot).
 # Get the absolute path of the directory where this script is located.
