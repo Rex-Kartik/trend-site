@@ -196,7 +196,7 @@ def generate_article_and_tags(topic):
             return None
         
         # Split the AI's full response at the "tags:" marker to separate the article from the tags.
-parts = response['choices'][0]['message']['content'].split("\ntags:")        content = parts[0].strip()
+        parts = response['choices'][0]['message']['content'].split("\ntags:")        content = parts[0].strip()
         tags = ["trends"] # Use a default tag in case parsing fails.
         if len(parts) > 1:
             # If the "tags:" marker was found, parse the second part into a list of strings.
