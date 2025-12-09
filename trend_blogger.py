@@ -182,7 +182,7 @@ def generate_article_and_tags(topic):
     tags: trends,ai,discovery,research
     """
     try:
-response = requests.post(
+        response = requests.post(
             perplexity_api_url,
             headers=perplexity_headers,
             json={
